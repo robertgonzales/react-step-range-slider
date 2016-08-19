@@ -1,0 +1,40 @@
+.StepRangeSlider {
+  position: relative;
+  width: 100%;
+}
+
+.StepRangeSlider__fill {
+  position: relative;
+  height: 5px;
+  width: 100%;
+  background-color: gray;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.StepRangeSlider__drag {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 30px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate3d(-50%,-50%,0);
+  cursor: pointer;
+}
+
+.StepRangeSlider__drag_handle {
+  border-radius: 4px;
+  width: 12px;
+  height: 20px;
+  background-color: red;
+}
+
+.StepRangeSlider__drag_tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
