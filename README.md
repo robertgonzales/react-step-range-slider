@@ -5,6 +5,8 @@ Use this component like a range input. Supports dynamic steps with breakpoints. 
 
 ## Example
 
+![step-slider-slider](https://cloud.githubusercontent.com/assets/7729885/17811378/68bd0140-65f0-11e6-9475-c9dc6fd457ed.gif)
+
 Usage:
 
 ```jsx
