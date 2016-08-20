@@ -1,27 +1,27 @@
 react-step-range-slider
 =========
 
-Use this component like a range input. Supports dynamic steps with breakpoints. Fully responsive.
+Use this component like a range input. Supports dynamic steps. Fully responsive.
 
 
 ## Example
 
-![react-step-range-slider](https://cloud.githubusercontent.com/assets/7729885/17827653/c1311dd0-664e-11e6-9a36-fee276eeb188.gif)
+![react-step-range-slider](https://cloud.githubusercontent.com/assets/7729885/17833926/e06462f6-66f9-11e6-8e88-c3dba1ee591e.gif)
 
 Usage:
 
 ```jsx
-const breakpoints = [
-  { breakpoint: 0, step: 1 }, // acts as min value
-  { breakpoint: 20, step: 5 }, 
-  { breakpoint: 50, step: 10 },
-  { breakpoint: 100, step: 50 },
-  { breakpoint: 500 } // acts as max value
+const range = [
+  { value: 0, step: 1 }, // acts as min value
+  { value: 20, step: 5 }, 
+  { value: 50, step: 10 },
+  { value: 100, step: 50 },
+  { value: 500 } // acts as max value
 ]
 
 <StepRangeSlider 
-  value={30} 
-  breakpoints={breakpoints} 
+  value={5} 
+  range={range} 
   onChange={value => console.log(value)}
 />
 ```
@@ -29,11 +29,11 @@ const breakpoints = [
 
 ## Props
 
-#### `breakpoints` : `array`
-Configures the step for each breakpoint as well as the min and max step/values. Required.
+#### `range` : `array`
+Configures min and max values as well as the step for each value breakpoint. Required.
 
 #### `value` : `number`
-Determines the position of the drag handle. Should be divisible by the step value at the appropriate breakpoint.
+Determines the position of the drag handle. Should be divisible by the step at the appropriate value breakpoint.
 
 #### `defaultValue` : `number`
 Determines initial position of the drag handle.
@@ -42,19 +42,19 @@ Determines initial position of the drag handle.
 Callback called on value change.
 
 #### `onChangeComplete` : `function`
-Callback called onDragEnd or onClick.
+Callback called on drag end or on click.
 
 #### `disabled` : `bool`
 Prevent value change.
 
 #### `children` : `any`
-Display whatever you want in the drag tooltip.
+Display whatever you want in the drag tooltip. Defaults to a tooltip.
 
 
 ## Methods
 
 #### `stepDown()` : `number`
-Decrements the value of the slider control by a specified number.
+Decrements the step of the slider by the specified number.
 
 #### `stepUp()` : `number`
-Increments the value of the slider control by a specified number.
+Increments the step of the slider by the specified number.

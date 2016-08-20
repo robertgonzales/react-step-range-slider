@@ -16,7 +16,7 @@
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.configureBreakpoints = configureBreakpoints;
+  exports.configureRange = configureRange;
   exports.getEmptyImage = getEmptyImage;
 
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -27,29 +27,29 @@
 
   /* EXAMPLE
   
-  const breakpoints = [
-    { breakpoint: 0, step: 1}, 
-    { breakpoint: 20, step: 5 }, 
-    { breakpoint: 100 }
+  const range = [
+    { value: 0, step: 1}, 
+    { value: 20, step: 5 }, 
+    { value: 100 }
   ]
   
-  const Breakpoints = configureBreakpoints(breakpoints)
+  const Range = configureRange(range)
   
-  Breakpoints.minStep // 0
-  Breakpoints.maxStep // 36
-  Breakpoints.getValueForStep(22) // 30
-  Breakpoints.getStepForValue(30) // 22
+  Range.minStep // 0
+  Range.maxStep // 36
+  Range.getValueForStep(22) // 30
+  Range.getStepForValue(30) // 22
   
   */
 
-  function configureBreakpoints(breakpoints) {
-    // sort by ascending breakpoints.
-    var sorted = _.sortBy(breakpoints, function (b) {
-      return b.breakpoint;
+  function configureRange(range) {
+    // sort by ascending value.
+    var sorted = _.sortBy(range, function (b) {
+      return b.value;
     });
-    // calculates stepsSoFar on each breakpoint 
+    // calculates stepsSoFar on each value breakpoint 
     // for easier value/step calulations later.
-    var _breakpoints = _.reduce(sorted, function (result, curr, key) {
+    var breakpoints = _.reduce(sorted, function (result, curr, key) {
       // to calculate stepsSoFar we must get the
       // range of values from the previous breakpoint
       // to our current breakpoint.
@@ -57,7 +57,7 @@
       if (prev) {
         // calculate number of steps to reach the 
         // breakpoint value.
-        curr.stepsSoFar = (curr.breakpoint - prev.breakpoint) / prev.step + prev.stepsSoFar;
+        curr.stepsSoFar = (curr.value - prev.value) / prev.step + prev.stepsSoFar;
       } else {
         // the first breakpoint represents min value
         // so stepsSoFar will always be 0.
@@ -74,10 +74,10 @@
     }, []);
 
     // min and max for easier calculations later
-    var minStep = _.first(_breakpoints).stepsSoFar;
-    var maxStep = _.last(_breakpoints).stepsSoFar;
-    var minValue = _.first(_breakpoints).breakpoint;
-    var maxValue = _.last(_breakpoints).breakpoint;
+    var minStep = _.first(breakpoints).stepsSoFar;
+    var maxStep = _.last(breakpoints).stepsSoFar;
+    var minValue = _.first(breakpoints).value;
+    var maxValue = _.last(breakpoints).value;
 
     // return value within min and max value range
     var ensureValue = function ensureValue(value) {
@@ -93,22 +93,22 @@
     // calculates value for current steps
     var getValueForStep = function getValueForStep(step) {
       // find the nearest breakpoint behind current step
-      var nearest = _.reduce(_breakpoints, function (prev, curr) {
+      var nearest = _.reduce(breakpoints, function (prev, curr) {
         return curr.stepsSoFar < step && curr.stepsSoFar > prev.stepsSoFar ? curr : prev;
-      }, _.first(_breakpoints));
+      }, _.first(breakpoints));
       // determine value past nearest breakpoint value
       var additionalValue = (step - nearest.stepsSoFar) * nearest.step;
-      return nearest.breakpoint + additionalValue;
+      return nearest.value + additionalValue;
     };
 
     // calculates number of steps for current value
     var getStepForValue = function getStepForValue(value) {
       // find the nearest breakpoint behind current value
-      var nearest = _.reduce(_breakpoints, function (prev, curr) {
-        return curr.breakpoint < value && curr.breakpoint > prev.breakpoint ? curr : prev;
-      }, _.first(_breakpoints));
+      var nearest = _.reduce(breakpoints, function (prev, curr) {
+        return curr.value < value && curr.value > prev.value ? curr : prev;
+      }, _.first(breakpoints));
       // determine number of steps past nearest breakpoint steps so far
-      var additionalSteps = (value - nearest.breakpoint) / nearest.step;
+      var additionalSteps = (value - nearest.value) / nearest.step;
       return nearest.stepsSoFar + additionalSteps;
     };
 

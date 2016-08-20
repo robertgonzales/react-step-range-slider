@@ -99,10 +99,11 @@
     _createClass(StepRangeSlider, [{
       key: 'setInitialState',
       value: function setInitialState(props) {
-        var breakpoints = (0, _sliderUtils.configureBreakpoints)(props.breakpoints);
-        var value = breakpoints.ensureValue(props.value || props.defaultValue);
-        var currentStep = breakpoints.getStepForValue(value);
-        this.setState({ value: value, breakpoints: breakpoints, currentStep: currentStep });
+        var range = (0, _sliderUtils.configureRange)(props.range);
+        console.log(range);
+        var value = range.ensureValue(props.value || props.defaultValue);
+        var currentStep = range.getStepForValue(value);
+        this.setState({ value: value, range: range, currentStep: currentStep });
       }
     }, {
       key: 'componentWillMount',
@@ -118,7 +119,7 @@
     }, {
       key: 'componentWillReceiveProps',
       value: function componentWillReceiveProps(nextProps) {
-        if (nextProps.breakpoints && nextProps.breakpoints !== this.props.breakpoints) {
+        if (nextProps.range && nextProps.range !== this.props.range) {
           this.setInitialState(nextProps);
         }
       }
@@ -126,12 +127,12 @@
       key: 'stepUp',
       value: function stepUp(amount) {
         var _state = this.state;
-        var breakpoints = _state.breakpoints;
+        var range = _state.range;
         var currentStep = _state.currentStep;
 
         var nextStep = currentStep + amount;
-        if (nextStep <= breakpoints.maxStep) {
-          var nextValue = breakpoints.getValueForStep(nextStep);
+        if (nextStep <= range.maxStep) {
+          var nextValue = range.getValueForStep(nextStep);
           this.setState({ currentStep: nextStep, value: nextValue });
         }
       }
@@ -139,12 +140,12 @@
       key: 'stepDown',
       value: function stepDown(amount) {
         var _state2 = this.state;
-        var breakpoints = _state2.breakpoints;
+        var range = _state2.range;
         var currentStep = _state2.currentStep;
 
         var nextStep = currentStep - amount;
-        if (nextStep >= breakpoints.minStep) {
-          var nextValue = breakpoints.getValueForStep(nextStep);
+        if (nextStep >= range.minStep) {
+          var nextValue = range.getValueForStep(nextStep);
           this.setState({ currentStep: nextStep, value: nextValue });
         }
       }
@@ -165,7 +166,7 @@
       key: 'handleDrag',
       value: function handleDrag(e) {
         var disabled = this.props.disabled;
-        var breakpoints = this.state.breakpoints;
+        var range = this.state.range;
         var _sliderRect = this.sliderRect;
         var width = _sliderRect.width;
         var left = _sliderRect.left;
@@ -183,11 +184,13 @@
           position = e.clientX - left;
         }
         var positionPercent = position / width;
-        var currentStep = Math.round(position / width * breakpoints.maxStep);
-        var value = breakpoints.getValueForStep(currentStep);
+        var currentStep = Math.round(position / width * range.maxStep);
+        var value = range.getValueForStep(currentStep);
 
-        this.setState({ value: value, currentStep: currentStep });
-        this.handleChange(value);
+        if (value !== this.state.value || currentStep !== this.state.currentStep) {
+          this.setState({ value: value, currentStep: currentStep });
+          this.handleChange(value);
+        }
       }
     }, {
       key: 'handleDragEnd',
@@ -218,10 +221,10 @@
         var children = _props.children;
         var _state3 = this.state;
         var value = _state3.value;
-        var breakpoints = _state3.breakpoints;
+        var range = _state3.range;
         var currentStep = _state3.currentStep;
 
-        var offset = currentStep / breakpoints.maxStep * 100;
+        var offset = currentStep / range.maxStep * 100;
         var offsetStyle = { left: offset + '%' };
 
         return _react2.default.createElement(
@@ -238,8 +241,8 @@
               draggable: true },
             _react2.default.createElement('div', {
               className: 'StepRangeSlider__thumb',
-              'aria-valuemin': breakpoints.minValue,
-              'aria-valuemax': breakpoints.maxValue,
+              'aria-valuemin': range.minValue,
+              'aria-valuemax': range.maxValue,
               'aria-valuenow': value,
               role: 'slider'
             }),
@@ -265,15 +268,15 @@
     disabled: _react2.default.PropTypes.bool,
     onChange: _react2.default.PropTypes.func,
     onChangeComplete: _react2.default.PropTypes.func,
-    breakpoints: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({
-      breakpoint: _react2.default.PropTypes.number.isRequired,
+    range: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({
+      value: _react2.default.PropTypes.number.isRequired,
       step: _react2.default.PropTypes.number
     }).isRequired).isRequired
   };
 
   StepRangeSlider.defaultProps = {
     defaultValue: 0,
-    breakpoints: [{ breakpoint: 0, step: 1 }, { breakpoint: 100 }],
+    range: [{ value: 0, step: 1 }, { value: 100 }],
     children: function children(value) {
       return _react2.default.createElement(
         'div',

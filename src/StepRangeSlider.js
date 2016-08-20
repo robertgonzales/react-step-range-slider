@@ -2,7 +2,7 @@ import './StepRangeSlider.css'
 import _ from 'lodash'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { configureBreakpoints , getEmptyImage } from './slider-utils'
+import { configureRange , getEmptyImage } from './slider-utils'
 
 
 export default class StepRangeSlider extends React.Component {
@@ -20,10 +20,11 @@ export default class StepRangeSlider extends React.Component {
   }
 
   setInitialState(props) {
-    const breakpoints = configureBreakpoints(props.breakpoints)
-    const value = breakpoints.ensureValue(props.value || props.defaultValue)
-    const currentStep = breakpoints.getStepForValue(value)
-    this.setState({ value, breakpoints, currentStep })
+    const range = configureRange(props.range)
+    console.log(range)
+    const value = range.ensureValue(props.value || props.defaultValue)
+    const currentStep = range.getStepForValue(value)
+    this.setState({ value, range, currentStep })
   }
 
   componentWillMount() {
@@ -36,25 +37,25 @@ export default class StepRangeSlider extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.breakpoints && nextProps.breakpoints !== this.props.breakpoints) {
+    if (nextProps.range && nextProps.range !== this.props.range) {
       this.setInitialState(nextProps)
     }
   }
 
   stepUp(amount) {
-    const { breakpoints, currentStep } = this.state
+    const { range, currentStep } = this.state
     const nextStep = currentStep + amount
-    if (nextStep <= breakpoints.maxStep) {
-      const nextValue = breakpoints.getValueForStep(nextStep)
+    if (nextStep <= range.maxStep) {
+      const nextValue = range.getValueForStep(nextStep)
       this.setState({ currentStep: nextStep, value: nextValue })
     }
   }
 
   stepDown(amount) {
-    const { breakpoints, currentStep } = this.state
+    const { range, currentStep } = this.state
     const nextStep = currentStep - amount
-    if (nextStep >= breakpoints.minStep) {
-      const nextValue = breakpoints.getValueForStep(nextStep)
+    if (nextStep >= range.minStep) {
+      const nextValue = range.getValueForStep(nextStep)
       this.setState({ currentStep: nextStep, value: nextValue })
     }
   }
@@ -71,7 +72,7 @@ export default class StepRangeSlider extends React.Component {
 
   handleDrag(e) {
     const { disabled } = this.props
-    const { breakpoints } = this.state
+    const { range } = this.state
     const { width, left, right } = this.sliderRect
 
     if (!e.clientX || disabled) return
@@ -85,11 +86,13 @@ export default class StepRangeSlider extends React.Component {
       position = e.clientX - left
     }
     const positionPercent = position / width
-    const currentStep = Math.round(position / width * breakpoints.maxStep)
-    const value = breakpoints.getValueForStep(currentStep)
+    const currentStep = Math.round(position / width * range.maxStep)
+    const value = range.getValueForStep(currentStep)
     
-    this.setState({ value, currentStep })
-    this.handleChange(value)
+    if (value !== this.state.value || currentStep !== this.state.currentStep) {
+      this.setState({ value, currentStep })
+      this.handleChange(value)
+    }
   }
 
   handleDragEnd(e) {
@@ -108,8 +111,8 @@ export default class StepRangeSlider extends React.Component {
 
   render() {  
     const { id, name, disabled, tooltip, children } = this.props
-    const { value, breakpoints, currentStep } = this.state
-    const offset = currentStep / breakpoints.maxStep * 100
+    const { value, range, currentStep } = this.state
+    const offset = currentStep / range.maxStep * 100
     const offsetStyle = { left: `${offset}%` }
 
     return (
@@ -123,8 +126,8 @@ export default class StepRangeSlider extends React.Component {
           draggable>
           <div 
             className="StepRangeSlider__thumb"
-            aria-valuemin={breakpoints.minValue}
-            aria-valuemax={breakpoints.maxValue}
+            aria-valuemin={range.minValue}
+            aria-valuemax={range.maxValue}
             aria-valuenow={value} 
             role="slider"
           />
@@ -147,9 +150,9 @@ StepRangeSlider.propTypes = {
   disabled: React.PropTypes.bool,
   onChange: React.PropTypes.func,
   onChangeComplete: React.PropTypes.func,
-  breakpoints: React.PropTypes.arrayOf(
+  range: React.PropTypes.arrayOf(
     React.PropTypes.shape({
-      breakpoint: React.PropTypes.number.isRequired,
+      value: React.PropTypes.number.isRequired,
       step: React.PropTypes.number,
     }).isRequired
   ).isRequired
@@ -157,7 +160,7 @@ StepRangeSlider.propTypes = {
 
 StepRangeSlider.defaultProps = {
   defaultValue: 0,
-  breakpoints: [{ breakpoint: 0, step: 1}, { breakpoint: 100 }],
+  range: [{ value: 0, step: 1}, { value: 100 }],
   children: value => (
     <div className="StepRangeSlider__tooltip">{value}</div>
   )
