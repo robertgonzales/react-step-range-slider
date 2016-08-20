@@ -9,6 +9,8 @@ export default class StepRangeSlider extends React.Component {
 
   constructor(props) {
     super(props)
+    this.stepUp = this.stepUp.bind(this)
+    this.stepDown = this.stepDown.bind(this)
     this.setInitialState = this.setInitialState.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleDragStart = this.handleDragStart.bind(this)
@@ -43,7 +45,8 @@ export default class StepRangeSlider extends React.Component {
     const { breakpoints, currentStep } = this.state
     const nextStep = currentStep + amount
     if (nextStep <= breakpoints.maxStep) {
-      this.setState({ currentStep: nextStep })
+      const nextValue = breakpoints.getValueForStep(nextStep)
+      this.setState({ currentStep: nextStep, value: nextValue })
     }
   }
 
@@ -51,7 +54,8 @@ export default class StepRangeSlider extends React.Component {
     const { breakpoints, currentStep } = this.state
     const nextStep = currentStep - amount
     if (nextStep >= breakpoints.minStep) {
-      this.setState({ currentStep: nextStep })
+      const nextValue = breakpoints.getValueForStep(nextStep)
+      this.setState({ currentStep: nextStep, value: nextValue })
     }
   }
 

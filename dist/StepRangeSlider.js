@@ -85,6 +85,8 @@
 
       var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StepRangeSlider).call(this, props));
 
+      _this.stepUp = _this.stepUp.bind(_this);
+      _this.stepDown = _this.stepDown.bind(_this);
       _this.setInitialState = _this.setInitialState.bind(_this);
       _this.handleChange = _this.handleChange.bind(_this);
       _this.handleDragStart = _this.handleDragStart.bind(_this);
@@ -129,7 +131,8 @@
 
         var nextStep = currentStep + amount;
         if (nextStep <= breakpoints.maxStep) {
-          this.setState({ currentStep: nextStep });
+          var nextValue = breakpoints.getValueForStep(nextStep);
+          this.setState({ currentStep: nextStep, value: nextValue });
         }
       }
     }, {
@@ -141,7 +144,8 @@
 
         var nextStep = currentStep - amount;
         if (nextStep >= breakpoints.minStep) {
-          this.setState({ currentStep: nextStep });
+          var nextValue = breakpoints.getValueForStep(nextStep);
+          this.setState({ currentStep: nextStep, value: nextValue });
         }
       }
     }, {
