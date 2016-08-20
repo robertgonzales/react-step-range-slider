@@ -1,38 +1,45 @@
 .StepRangeSlider {
   position: relative;
   width: 100%;
+  padding: 5px 2px;
 }
 
-.StepRangeSlider__fill {
-  position: relative;
+.StepRangeSlider__track {
   height: 5px;
   width: 100%;
-  background-color: gray;
   border-radius: 4px;
-  pointer-events: none;
+  background-color: #bbb;
+  border: 1px solid #999;
+  box-sizing: border-box;;
+  /*-webkit-appearance: slider-horizontal;*/
 }
 
-.StepRangeSlider__drag {
+.StepRangeSlider__handle {
   position: absolute;
   left: 0;
   top: 50%;
   width: 30px;
-  height: 40px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: translate3d(-50%,-50%,0);
-  cursor: pointer;
 }
 
-.StepRangeSlider__drag_handle {
-  border-radius: 4px;
-  width: 12px;
-  height: 20px;
-  background-color: red;
+.StepRangeSlider__thumb {
+  border-radius: 10px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #888;
+  background-color: #eee;
+  /*-webkit-appearance: sliderthumb-horizontal;*/
 }
 
-.StepRangeSlider__drag_tooltip {
+.StepRangeSlider__thumb:active {
+  background-color: #ddd;
+}
+
+.StepRangeSlider__tooltip {
   position: absolute;
   bottom: 100%;
   left: 50%;

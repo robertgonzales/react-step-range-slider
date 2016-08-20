@@ -88,8 +88,8 @@
       _this.setInitialState = _this.setInitialState.bind(_this);
       _this.handleChange = _this.handleChange.bind(_this);
       _this.handleDragStart = _this.handleDragStart.bind(_this);
-      _this.handleDragEnd = _this.handleDragEnd.bind(_this);
       _this.handleDrag = _this.handleDrag.bind(_this);
+      _this.handleDragEnd = _this.handleDragEnd.bind(_this);
       _this.handleClick = _this.handleClick.bind(_this);
       return _this;
     }
@@ -98,14 +98,14 @@
       key: 'setInitialState',
       value: function setInitialState(props) {
         var breakpoints = (0, _sliderUtils.configureBreakpoints)(props.breakpoints);
-        var value = breakpoints.ensureValue(props.value);
+        var value = breakpoints.ensureValue(props.value || props.defaultValue);
         var currentStep = breakpoints.getStepForValue(value);
         this.setState({ value: value, breakpoints: breakpoints, currentStep: currentStep });
       }
     }, {
       key: 'componentWillMount',
       value: function componentWillMount() {
-        this.handleChange = _lodash2.default.throttle(this.handleChange, this.props.throttleChange);
+        this.handleChange = _lodash2.default.throttle(this.handleChange, 100);
         this.setInitialState(this.props);
       }
     }, {
@@ -121,18 +121,35 @@
         }
       }
     }, {
+      key: 'stepUp',
+      value: function stepUp(amount) {
+        var _state = this.state;
+        var breakpoints = _state.breakpoints;
+        var currentStep = _state.currentStep;
+
+        var nextStep = currentStep + amount;
+        if (nextStep <= breakpoints.maxStep) {
+          this.setState({ currentStep: nextStep });
+        }
+      }
+    }, {
+      key: 'stepDown',
+      value: function stepDown(amount) {
+        var _state2 = this.state;
+        var breakpoints = _state2.breakpoints;
+        var currentStep = _state2.currentStep;
+
+        var nextStep = currentStep - amount;
+        if (nextStep >= breakpoints.minStep) {
+          this.setState({ currentStep: nextStep });
+        }
+      }
+    }, {
       key: 'handleChange',
-      value: function handleChange() {
-        var value = this.state.value;
+      value: function handleChange(value) {
         var onChange = this.props.onChange;
 
         _lodash2.default.isFunction(onChange) && onChange(value);
-      }
-    }, {
-      key: 'handleClick',
-      value: function handleClick(e) {
-        this.sliderRect = e.currentTarget.getBoundingClientRect();
-        this.handleDrag(e);
       }
     }, {
       key: 'handleDragStart',
@@ -141,27 +158,17 @@
         e.dataTransfer.setDragImage((0, _sliderUtils.getEmptyImage)(e), 0, 0);
       }
     }, {
-      key: 'handleDragEnd',
-      value: function handleDragEnd(e) {
-        var value = this.state.value;
-        var onChange = this.props.onChange;
-
-        _lodash2.default.isFunction(onChange) && onChange(value);
-      }
-    }, {
       key: 'handleDrag',
       value: function handleDrag(e) {
-        var _this2 = this;
-
-        if (!e.clientX) {
-          return;
-        }
+        var disabled = this.props.disabled;
         var breakpoints = this.state.breakpoints;
         var _sliderRect = this.sliderRect;
         var width = _sliderRect.width;
         var left = _sliderRect.left;
         var right = _sliderRect.right;
 
+
+        if (!e.clientX || disabled) return;
 
         var position = void 0;
         if (e.clientX < left) {
@@ -175,43 +182,66 @@
         var currentStep = Math.round(position / width * breakpoints.maxStep);
         var value = breakpoints.getValueForStep(currentStep);
 
-        this.setState({ value: value, currentStep: currentStep }, function () {
-          _this2.handleChange();
-        });
+        this.setState({ value: value, currentStep: currentStep });
+        this.handleChange(value);
+      }
+    }, {
+      key: 'handleDragEnd',
+      value: function handleDragEnd(e) {
+        var value = this.state.value;
+        var onChangeComplete = this.props.onChangeComplete;
+
+        _lodash2.default.isFunction(onChangeComplete) && onChangeComplete(value);
+      }
+    }, {
+      key: 'handleClick',
+      value: function handleClick(e) {
+        var value = this.state.value;
+        var onChangeComplete = this.props.onChangeComplete;
+
+        this.sliderRect = e.currentTarget.getBoundingClientRect();
+        this.handleDrag(e);
+        _lodash2.default.isFunction(onChangeComplete) && onChangeComplete(value);
       }
     }, {
       key: 'render',
       value: function render() {
-        var children = this.props.children;
-        var _state = this.state;
-        var value = _state.value;
-        var breakpoints = _state.breakpoints;
-        var currentStep = _state.currentStep;
+        var _props = this.props;
+        var id = _props.id;
+        var name = _props.name;
+        var disabled = _props.disabled;
+        var tooltip = _props.tooltip;
+        var children = _props.children;
+        var _state3 = this.state;
+        var value = _state3.value;
+        var breakpoints = _state3.breakpoints;
+        var currentStep = _state3.currentStep;
 
-        var position = currentStep / breakpoints.maxStep;
-        var offsetStyle = { left: position * 100 + '%' };
+        var offset = currentStep / breakpoints.maxStep * 100;
+        var offsetStyle = { left: offset + '%' };
 
         return _react2.default.createElement(
           'div',
           { className: 'StepRangeSlider', onClick: this.handleClick },
-          _react2.default.createElement('div', { className: 'StepRangeSlider__fill' }),
+          _react2.default.createElement('div', { className: 'StepRangeSlider__track' }),
           _react2.default.createElement(
             'div',
-            {
-              className: 'StepRangeSlider__drag',
+            { className: 'StepRangeSlider__handle',
               onDragStart: this.handleDragStart,
               onDragEnd: this.handleDragEnd,
               onDrag: this.handleDrag,
               style: offsetStyle,
               draggable: true },
-            _react2.default.createElement('div', { className: 'StepRangeSlider__drag_handle' }),
-            _react2.default.createElement(
-              'div',
-              { className: 'StepRangeSlider__drag_tooltip' },
-              this.state.value,
-              children
-            )
-          )
+            _react2.default.createElement('div', {
+              className: 'StepRangeSlider__thumb',
+              'aria-valuemin': breakpoints.minValue,
+              'aria-valuemax': breakpoints.maxValue,
+              'aria-valuenow': value,
+              role: 'slider'
+            }),
+            _lodash2.default.isFunction(children) ? children(value) : children
+          ),
+          _react2.default.createElement('input', { type: 'hidden', id: id, name: name, disabled: disabled })
         );
       }
     }]);
@@ -226,9 +256,10 @@
 
   StepRangeSlider.propTypes = {
     children: _react2.default.PropTypes.any,
-    value: _react2.default.PropTypes.number.isRequired,
-    onChange: _react2.default.PropTypes.func.isRequired,
-    throttleChange: _react2.default.PropTypes.number.isRequired,
+    value: _react2.default.PropTypes.number,
+    defaultValue: _react2.default.PropTypes.number,
+    onChange: _react2.default.PropTypes.func,
+    onChangeComplete: _react2.default.PropTypes.func,
     breakpoints: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({
       breakpoint: _react2.default.PropTypes.number.isRequired,
       step: _react2.default.PropTypes.number
@@ -236,8 +267,14 @@
   };
 
   StepRangeSlider.defaultProps = {
-    value: 0,
-    throttleChange: 100,
-    breakpoints: [{ breakpoint: 0, step: 1 }, { breakpoint: 100 }]
+    defaultValue: 0,
+    breakpoints: [{ breakpoint: 0, step: 1 }, { breakpoint: 100 }],
+    children: function children(value) {
+      return _react2.default.createElement(
+        'div',
+        { className: 'StepRangeSlider__tooltip' },
+        value
+      );
+    }
   };
 });

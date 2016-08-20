@@ -13,8 +13,8 @@ const breakpoints = [
 
 ReactDOM.render(
   <StepRangeSlider 
-    value={70} 
-    breakpoints={breakpoints} 
+    defaultValue={5}
+    breakpoints={breakpoints}
     onChange={value => console.log(value)}
   />,
   document.getElementById('app')

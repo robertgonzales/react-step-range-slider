@@ -12,20 +12,20 @@ export default class StepRangeSlider extends React.Component {
     this.setInitialState = this.setInitialState.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleDragStart = this.handleDragStart.bind(this)
-    this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleDrag = this.handleDrag.bind(this)
+    this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleClick = this.handleClick.bind(this)
   }
 
   setInitialState(props) {
     const breakpoints = configureBreakpoints(props.breakpoints)
-    const value = breakpoints.ensureValue(props.value)
+    const value = breakpoints.ensureValue(props.value || props.defaultValue)
     const currentStep = breakpoints.getStepForValue(value)
     this.setState({ value, breakpoints, currentStep })
   }
 
   componentWillMount() {
-    this.handleChange = _.throttle(this.handleChange, this.props.throttleChange)
+    this.handleChange = _.throttle(this.handleChange, 100)
     this.setInitialState(this.props)
   }
 
@@ -39,15 +39,25 @@ export default class StepRangeSlider extends React.Component {
     }
   }
 
-  handleChange() {
-    const { value } = this.state
-    const { onChange } = this.props
-    _.isFunction(onChange) && onChange(value)
+  stepUp(amount) {
+    const { breakpoints, currentStep } = this.state
+    const nextStep = currentStep + amount
+    if (nextStep <= breakpoints.maxStep) {
+      this.setState({ currentStep: nextStep })
+    }
   }
 
-  handleClick(e) {
-    this.sliderRect = e.currentTarget.getBoundingClientRect()
-    this.handleDrag(e)
+  stepDown(amount) {
+    const { breakpoints, currentStep } = this.state
+    const nextStep = currentStep - amount
+    if (nextStep >= breakpoints.minStep) {
+      this.setState({ currentStep: nextStep })
+    }
+  }
+
+  handleChange(value) {
+    const { onChange } = this.props
+    _.isFunction(onChange) && onChange(value)
   }
 
   handleDragStart(e) {
@@ -55,18 +65,12 @@ export default class StepRangeSlider extends React.Component {
     e.dataTransfer.setDragImage(getEmptyImage(e), 0, 0) 
   }
 
-  handleDragEnd(e) {
-    const { value } = this.state
-    const { onChange } = this.props
-    _.isFunction(onChange) && onChange(value)
-  }
-
   handleDrag(e) {
-    if (!e.clientX) {
-      return
-    } 
+    const { disabled } = this.props
     const { breakpoints } = this.state
     const { width, left, right } = this.sliderRect
+
+    if (!e.clientX || disabled) return
 
     let position;
     if (e.clientX < left) {
@@ -80,33 +84,49 @@ export default class StepRangeSlider extends React.Component {
     const currentStep = Math.round(position / width * breakpoints.maxStep)
     const value = breakpoints.getValueForStep(currentStep)
     
-    this.setState({ value, currentStep }, () => {
-      this.handleChange()
-    })
+    this.setState({ value, currentStep })
+    this.handleChange(value)
+  }
+
+  handleDragEnd(e) {
+    const { value } = this.state
+    const { onChangeComplete } = this.props
+    _.isFunction(onChangeComplete) && onChangeComplete(value)
+  }
+
+  handleClick(e) {
+    const { value } = this.state
+    const { onChangeComplete } = this.props
+    this.sliderRect = e.currentTarget.getBoundingClientRect()
+    this.handleDrag(e)
+    _.isFunction(onChangeComplete) && onChangeComplete(value)
   }
 
   render() {  
-    const { children } = this.props
+    const { id, name, disabled, tooltip, children } = this.props
     const { value, breakpoints, currentStep } = this.state
-    const position = currentStep / breakpoints.maxStep
-    const offsetStyle = { left: `${position * 100}%` }
+    const offset = currentStep / breakpoints.maxStep * 100
+    const offsetStyle = { left: `${offset}%` }
 
     return (
       <div className="StepRangeSlider" onClick={this.handleClick}>
-        <div className="StepRangeSlider__fill" />
-        <div 
-          className="StepRangeSlider__drag"
+        <div className="StepRangeSlider__track" />
+        <div className="StepRangeSlider__handle"
           onDragStart={this.handleDragStart}
           onDragEnd={this.handleDragEnd} 
           onDrag={this.handleDrag} 
           style={offsetStyle}
           draggable>
-          <div className="StepRangeSlider__drag_handle" />
-          <div className="StepRangeSlider__drag_tooltip">
-            {this.state.value}
-            {children}
-          </div>
+          <div 
+            className="StepRangeSlider__thumb"
+            aria-valuemin={breakpoints.minValue}
+            aria-valuemax={breakpoints.maxValue}
+            aria-valuenow={value} 
+            role="slider"
+          />
+          {_.isFunction(children) ? children(value) : children}
         </div>
+        <input type="hidden" id={id} name={name} disabled={disabled} />
       </div>
     )
   }
@@ -118,9 +138,10 @@ StepRangeSlider.displayName = "StepRangeSlider"
 
 StepRangeSlider.propTypes = {
   children: React.PropTypes.any,
-  value: React.PropTypes.number.isRequired,
-  onChange: React.PropTypes.func.isRequired,
-  throttleChange: React.PropTypes.number.isRequired,
+  value: React.PropTypes.number,
+  defaultValue: React.PropTypes.number,
+  onChange: React.PropTypes.func,
+  onChangeComplete: React.PropTypes.func,
   breakpoints: React.PropTypes.arrayOf(
     React.PropTypes.shape({
       breakpoint: React.PropTypes.number.isRequired,
@@ -130,7 +151,9 @@ StepRangeSlider.propTypes = {
 }
 
 StepRangeSlider.defaultProps = {
-  value: 0,
-  throttleChange: 100,
-  breakpoints: [{ breakpoint: 0, step: 1}, { breakpoint: 100 }]
+  defaultValue: 0,
+  breakpoints: [{ breakpoint: 0, step: 1}, { breakpoint: 100 }],
+  children: value => (
+    <div className="StepRangeSlider__tooltip">{value}</div>
+  )
 }
