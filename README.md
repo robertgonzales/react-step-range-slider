@@ -5,8 +5,7 @@ Use this component like a range input. Supports dynamic steps with breakpoints. 
 
 ## Example
 
-![react-step-range-slider](https://cloud.githubusercontent.com/assets/7729885/17827622/fec64522-664d-11e6-9c4e-f87a252c4fca.gif)
-
+![react-step-range-slider](https://cloud.githubusercontent.com/assets/7729885/17827653/c1311dd0-664e-11e6-9a36-fee276eeb188.gif)
 
 Usage:
 
