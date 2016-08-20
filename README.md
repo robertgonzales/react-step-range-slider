@@ -20,22 +20,10 @@ const breakpoints = [
 ]
 
 <StepRangeSlider 
-  value={70} 
+  value={30} 
   breakpoints={breakpoints} 
   onChange={value => console.log(value)}
 />
-```
-
-Generates the following html:
-
-```html
-<div class="StepRangeSlider">
-  <div class="StepRangeSlider__fill"></div>
-  <div class="StepRangeSlider__drag" style="left:62%" draggable="true">
-    <div class="StepRangeSlider__drag_handle"></div>
-    <div class="StepRangeSlider__drag_tooltip">70</div>
-  </div>
-</div>
 ```
 
 
