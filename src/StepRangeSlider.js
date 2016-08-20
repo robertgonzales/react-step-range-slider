@@ -140,6 +140,7 @@ StepRangeSlider.propTypes = {
   children: React.PropTypes.any,
   value: React.PropTypes.number,
   defaultValue: React.PropTypes.number,
+  disabled: React.PropTypes.bool,
   onChange: React.PropTypes.func,
   onChangeComplete: React.PropTypes.func,
   breakpoints: React.PropTypes.arrayOf(

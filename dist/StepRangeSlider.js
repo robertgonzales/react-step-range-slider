@@ -258,6 +258,7 @@
     children: _react2.default.PropTypes.any,
     value: _react2.default.PropTypes.number,
     defaultValue: _react2.default.PropTypes.number,
+    disabled: _react2.default.PropTypes.bool,
     onChange: _react2.default.PropTypes.func,
     onChangeComplete: _react2.default.PropTypes.func,
     breakpoints: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({
