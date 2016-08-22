@@ -1,8 +1,11 @@
 react-step-range-slider
 =========
 
-Use this component like a range input. Supports dynamic steps. Fully responsive.
+Use this component like a range input with dynamic steps. Fully responsive and supports touch.
 
+## Install
+
+`$ npm install react-step-range-slider --save`
 
 ## Example
 
@@ -11,6 +14,8 @@ Use this component like a range input. Supports dynamic steps. Fully responsive.
 Usage:
 
 ```jsx
+import StepRangeSlider from 'react-step-range-slider'
+
 const range = [
   { value: 0, step: 1 }, // acts as min value
   { value: 20, step: 5 }, 
@@ -53,8 +58,8 @@ Display whatever you want in the drag tooltip. Defaults to a tooltip.
 
 ## Methods
 
-#### `stepDown()` : `number`
+#### `stepDown()`
 Decrements the step of the slider by the specified number.
 
-#### `stepUp()` : `number`
+#### `stepUp()`
 Increments the step of the slider by the specified number.
