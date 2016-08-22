@@ -18,9 +18,10 @@ export default class StepRangeSlider extends React.Component {
     this.handleTouchMove = this.handleTouchMove.bind(this)
     this.handleTouchEnd = this.handleTouchEnd.bind(this)
     this.handleDragStart = this.handleDragStart.bind(this)
-    this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleDrag = this.handleDrag.bind(this)
+    this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleSnap = this.handleSnap.bind(this)
+    this.handleMove = this.handleMove.bind(this)
   }
 
   componentWillMount() {
@@ -35,6 +36,11 @@ export default class StepRangeSlider extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.range && nextProps.range !== this.props.range) {
       this.setInitialState(nextProps)
+    } 
+    if (nextProps.value !== this.props.value && 
+        nextProps.value !== this.state.value) {
+      const value = this.state.range.ensureValue(nextProps.value)
+      this.setState({ value })
     }
   }
 
@@ -63,7 +69,8 @@ export default class StepRangeSlider extends React.Component {
     }
   }
 
-  handleChange(value) {
+  handleChange() {
+    const { value } = this.state
     const { onChange } = this.props
     _.isFunction(onChange) && onChange(value)
   }
@@ -92,39 +99,45 @@ export default class StepRangeSlider extends React.Component {
     e.dataTransfer.setDragImage(getEmptyImage(e), 0, 0) 
   }
 
+  handleDrag(e) {
+    this.handleMove(e.clientX, () => {
+      this.handleChange()
+    })
+  }
+
   handleDragEnd(e) {
     this.handleChangeComplete()
   }
 
-  handleDrag(e) {
+  handleSnap(e) {
+    this.sliderRect = e.currentTarget.getBoundingClientRect()
+    this.handleMove(e.clientX, () => {
+      this.handleChange()
+      this.handleChangeComplete()
+    })
+  }
+
+  handleMove(clientX, callback) {
     const { disabled } = this.props
     const { range } = this.state
     const { width, left, right } = this.sliderRect
 
-    if (!e.clientX || disabled) return
+    if (!clientX || disabled) return
 
     let position;
-    if (e.clientX < left) {
+    if (clientX < left) {
       position = 0
-    } else if (e.clientX > right) {
+    } else if (clientX > right) {
       position = right - left
     } else {
-      position = e.clientX - left
+      position = clientX - left
     }
-    const positionPercent = position / width
     const currentStep = Math.round(position / width * range.maxStep)
-    const value = range.getValueForStep(currentStep)
+    const value = range.getValueForStep(currentStep) 
     
     if (value !== this.state.value || currentStep !== this.state.currentStep) {
-      this.setState({ value, currentStep })
-      this.handleChange(value)
-    }
-  }
-
-  handleSnap(e) {
-    this.sliderRect = e.currentTarget.getBoundingClientRect()
-    this.handleDrag(e)
-    this.handleChangeComplete()
+      this.setState({ value, currentStep }, callback)
+    }   
   }
 
   render() {  

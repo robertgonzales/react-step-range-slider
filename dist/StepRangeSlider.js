@@ -94,9 +94,10 @@
       _this.handleTouchMove = _this.handleTouchMove.bind(_this);
       _this.handleTouchEnd = _this.handleTouchEnd.bind(_this);
       _this.handleDragStart = _this.handleDragStart.bind(_this);
-      _this.handleDragEnd = _this.handleDragEnd.bind(_this);
       _this.handleDrag = _this.handleDrag.bind(_this);
+      _this.handleDragEnd = _this.handleDragEnd.bind(_this);
       _this.handleSnap = _this.handleSnap.bind(_this);
+      _this.handleMove = _this.handleMove.bind(_this);
       return _this;
     }
 
@@ -116,6 +117,10 @@
       value: function componentWillReceiveProps(nextProps) {
         if (nextProps.range && nextProps.range !== this.props.range) {
           this.setInitialState(nextProps);
+        }
+        if (nextProps.value !== this.props.value && nextProps.value !== this.state.value) {
+          var value = this.state.range.ensureValue(nextProps.value);
+          this.setState({ value: value });
         }
       }
     }, {
@@ -154,7 +159,8 @@
       }
     }, {
       key: 'handleChange',
-      value: function handleChange(value) {
+      value: function handleChange() {
+        var value = this.state.value;
         var onChange = this.props.onChange;
 
         _lodash2.default.isFunction(onChange) && onChange(value);
@@ -190,13 +196,33 @@
         e.dataTransfer.setDragImage((0, _sliderUtils.getEmptyImage)(e), 0, 0);
       }
     }, {
+      key: 'handleDrag',
+      value: function handleDrag(e) {
+        var _this2 = this;
+
+        this.handleMove(e.clientX, function () {
+          _this2.handleChange();
+        });
+      }
+    }, {
       key: 'handleDragEnd',
       value: function handleDragEnd(e) {
         this.handleChangeComplete();
       }
     }, {
-      key: 'handleDrag',
-      value: function handleDrag(e) {
+      key: 'handleSnap',
+      value: function handleSnap(e) {
+        var _this3 = this;
+
+        this.sliderRect = e.currentTarget.getBoundingClientRect();
+        this.handleMove(e.clientX, function () {
+          _this3.handleChange();
+          _this3.handleChangeComplete();
+        });
+      }
+    }, {
+      key: 'handleMove',
+      value: function handleMove(clientX, callback) {
         var disabled = this.props.disabled;
         var range = this.state.range;
         var _sliderRect = this.sliderRect;
@@ -205,31 +231,22 @@
         var right = _sliderRect.right;
 
 
-        if (!e.clientX || disabled) return;
+        if (!clientX || disabled) return;
 
         var position = void 0;
-        if (e.clientX < left) {
+        if (clientX < left) {
           position = 0;
-        } else if (e.clientX > right) {
+        } else if (clientX > right) {
           position = right - left;
         } else {
-          position = e.clientX - left;
+          position = clientX - left;
         }
-        var positionPercent = position / width;
         var currentStep = Math.round(position / width * range.maxStep);
         var value = range.getValueForStep(currentStep);
 
         if (value !== this.state.value || currentStep !== this.state.currentStep) {
-          this.setState({ value: value, currentStep: currentStep });
-          this.handleChange(value);
+          this.setState({ value: value, currentStep: currentStep }, callback);
         }
-      }
-    }, {
-      key: 'handleSnap',
-      value: function handleSnap(e) {
-        this.sliderRect = e.currentTarget.getBoundingClientRect();
-        this.handleDrag(e);
-        this.handleChangeComplete();
       }
     }, {
       key: 'render',
