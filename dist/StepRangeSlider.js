@@ -85,27 +85,22 @@
 
       var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StepRangeSlider).call(this, props));
 
+      _this.setInitialState = _this.setInitialState.bind(_this);
       _this.stepUp = _this.stepUp.bind(_this);
       _this.stepDown = _this.stepDown.bind(_this);
-      _this.setInitialState = _this.setInitialState.bind(_this);
       _this.handleChange = _this.handleChange.bind(_this);
+      _this.handleChangeComplete = _this.handleChangeComplete.bind(_this);
+      _this.handleTouchStart = _this.handleTouchStart.bind(_this);
+      _this.handleTouchMove = _this.handleTouchMove.bind(_this);
+      _this.handleTouchEnd = _this.handleTouchEnd.bind(_this);
       _this.handleDragStart = _this.handleDragStart.bind(_this);
-      _this.handleDrag = _this.handleDrag.bind(_this);
       _this.handleDragEnd = _this.handleDragEnd.bind(_this);
-      _this.handleClick = _this.handleClick.bind(_this);
+      _this.handleDrag = _this.handleDrag.bind(_this);
+      _this.handleSnap = _this.handleSnap.bind(_this);
       return _this;
     }
 
     _createClass(StepRangeSlider, [{
-      key: 'setInitialState',
-      value: function setInitialState(props) {
-        var range = (0, _sliderUtils.configureRange)(props.range);
-        console.log(range);
-        var value = range.ensureValue(props.value || props.defaultValue);
-        var currentStep = range.getStepForValue(value);
-        this.setState({ value: value, range: range, currentStep: currentStep });
-      }
-    }, {
       key: 'componentWillMount',
       value: function componentWillMount() {
         this.handleChange = _lodash2.default.throttle(this.handleChange, 100);
@@ -122,6 +117,14 @@
         if (nextProps.range && nextProps.range !== this.props.range) {
           this.setInitialState(nextProps);
         }
+      }
+    }, {
+      key: 'setInitialState',
+      value: function setInitialState(props) {
+        var range = (0, _sliderUtils.configureRange)(props.range);
+        var value = range.ensureValue(props.value || props.defaultValue);
+        var currentStep = range.getStepForValue(value);
+        this.setState({ value: value, range: range, currentStep: currentStep });
       }
     }, {
       key: 'stepUp',
@@ -157,10 +160,39 @@
         _lodash2.default.isFunction(onChange) && onChange(value);
       }
     }, {
+      key: 'handleChangeComplete',
+      value: function handleChangeComplete() {
+        var value = this.state.value;
+        var onChangeComplete = this.props.onChangeComplete;
+
+        _lodash2.default.isFunction(onChangeComplete) && onChangeComplete(value);
+      }
+    }, {
+      key: 'handleTouchStart',
+      value: function handleTouchStart(e) {
+        this.sliderRect = e.currentTarget.parentNode.getBoundingClientRect();
+      }
+    }, {
+      key: 'handleTouchEnd',
+      value: function handleTouchEnd(e) {
+        this.handleChangeComplete();
+      }
+    }, {
+      key: 'handleTouchMove',
+      value: function handleTouchMove(e) {
+        e.preventDefault();
+        this.handleDrag(e.touches[0]);
+      }
+    }, {
       key: 'handleDragStart',
       value: function handleDragStart(e) {
         this.sliderRect = e.currentTarget.parentNode.getBoundingClientRect();
         e.dataTransfer.setDragImage((0, _sliderUtils.getEmptyImage)(e), 0, 0);
+      }
+    }, {
+      key: 'handleDragEnd',
+      value: function handleDragEnd(e) {
+        this.handleChangeComplete();
       }
     }, {
       key: 'handleDrag',
@@ -193,22 +225,11 @@
         }
       }
     }, {
-      key: 'handleDragEnd',
-      value: function handleDragEnd(e) {
-        var value = this.state.value;
-        var onChangeComplete = this.props.onChangeComplete;
-
-        _lodash2.default.isFunction(onChangeComplete) && onChangeComplete(value);
-      }
-    }, {
-      key: 'handleClick',
-      value: function handleClick(e) {
-        var value = this.state.value;
-        var onChangeComplete = this.props.onChangeComplete;
-
+      key: 'handleSnap',
+      value: function handleSnap(e) {
         this.sliderRect = e.currentTarget.getBoundingClientRect();
         this.handleDrag(e);
-        _lodash2.default.isFunction(onChangeComplete) && onChangeComplete(value);
+        this.handleChangeComplete();
       }
     }, {
       key: 'render',
@@ -229,11 +250,14 @@
 
         return _react2.default.createElement(
           'div',
-          { className: 'StepRangeSlider', onClick: this.handleClick },
+          { className: 'StepRangeSlider', onMouseDown: this.handleSnap },
           _react2.default.createElement('div', { className: 'StepRangeSlider__track' }),
           _react2.default.createElement(
             'div',
             { className: 'StepRangeSlider__handle',
+              onTouchStart: this.handleTouchStart,
+              onTouchMove: this.handleTouchMove,
+              onTouchEnd: this.handleTouchEnd,
               onDragStart: this.handleDragStart,
               onDragEnd: this.handleDragEnd,
               onDrag: this.handleDrag,
