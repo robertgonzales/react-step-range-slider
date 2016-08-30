@@ -2,6 +2,7 @@ import './StepRangeSlider.css'
 import _ from 'lodash'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import classnames from 'classnames'
 import { configureRange , getEmptyImage } from './slider-utils'
 
 
@@ -141,13 +142,14 @@ export default class StepRangeSlider extends React.Component {
   }
 
   render() {  
-    const { id, name, disabled, tooltip, children } = this.props
+    const { id, name, disabled, tooltip, children, className } = this.props
     const { value, range, currentStep } = this.state
+
     const offset = currentStep / range.maxStep * 100
     const offsetStyle = { left: `${offset}%` }
 
     return (
-      <div className="StepRangeSlider" onMouseDown={this.handleSnap}>
+      <div className={classnames("StepRangeSlider", className)} onMouseDown={this.handleSnap}>
         <div className="StepRangeSlider__track" />
         <div className="StepRangeSlider__handle"
           onTouchStart={this.handleTouchStart}

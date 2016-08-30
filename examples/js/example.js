@@ -28,6 +28,7 @@ export default class Example extends React.Component {
 
     return (
       <StepRangeSlider 
+        className="ExampleSlider"
         range={range}
         value={this.state.value}
         onChange={this.handleChange}

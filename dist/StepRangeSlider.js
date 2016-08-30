@@ -1,16 +1,16 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'lodash', 'react', 'react-dom', './slider-utils', './StepRangeSlider.css'], factory);
+    define(['exports', 'lodash', 'react', 'react-dom', 'classnames', './slider-utils', './StepRangeSlider.css'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('lodash'), require('react'), require('react-dom'), require('./slider-utils'), require('./StepRangeSlider.css'));
+    factory(exports, require('lodash'), require('react'), require('react-dom'), require('classnames'), require('./slider-utils'), require('./StepRangeSlider.css'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.lodash, global.react, global.reactDom, global.sliderUtils, global.StepRangeSlider);
+    factory(mod.exports, global.lodash, global.react, global.reactDom, global.classnames, global.sliderUtils, global.StepRangeSlider);
     global.StepRangeSlider = mod.exports;
   }
-})(this, function (exports, _lodash, _react, _reactDom, _sliderUtils) {
+})(this, function (exports, _lodash, _react, _reactDom, _classnames, _sliderUtils) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -22,6 +22,8 @@
   var _react2 = _interopRequireDefault(_react);
 
   var _reactDom2 = _interopRequireDefault(_reactDom);
+
+  var _classnames2 = _interopRequireDefault(_classnames);
 
   function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : {
@@ -257,17 +259,19 @@
         var disabled = _props.disabled;
         var tooltip = _props.tooltip;
         var children = _props.children;
+        var className = _props.className;
         var _state3 = this.state;
         var value = _state3.value;
         var range = _state3.range;
         var currentStep = _state3.currentStep;
+
 
         var offset = currentStep / range.maxStep * 100;
         var offsetStyle = { left: offset + '%' };
 
         return _react2.default.createElement(
           'div',
-          { className: 'StepRangeSlider', onMouseDown: this.handleSnap },
+          { className: (0, _classnames2.default)("StepRangeSlider", className), onMouseDown: this.handleSnap },
           _react2.default.createElement('div', { className: 'StepRangeSlider__track' }),
           _react2.default.createElement(
             'div',

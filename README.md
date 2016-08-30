@@ -52,6 +52,9 @@ Callback called on drag end or on click.
 #### `disabled` : `bool`
 Prevent value change.
 
+#### `className` : `string`
+Provide your own class for the outer element.
+
 #### `children` : `any`
 Display whatever you want in the drag tooltip. Defaults to a tooltip.
 
