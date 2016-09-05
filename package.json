@@ -2,7 +2,7 @@
   "name": "react-step-range-slider",
   "description": "A range slider input for React",
   "main": "dist/index.js",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "Robert Gonzales",
   "license": "MIT",
   "keywords": [
