@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import StepRangeSlider from '../../dist'
 
-
 export default class Example extends React.Component {
 
   constructor(props) {
@@ -27,12 +26,14 @@ export default class Example extends React.Component {
     ]
 
     return (
-      <StepRangeSlider 
-        className="ExampleSlider"
-        range={range}
-        value={this.state.value}
-        onChange={this.handleChange}
-      />
+      <div>
+        <StepRangeSlider 
+          className="ExampleSlider"
+          range={range}
+          value={this.state.value}
+          onChange={this.handleChange}
+        />
+      </div>
     )
   }
 

@@ -3,7 +3,7 @@ import _ from 'lodash'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import classnames from 'classnames'
-import { configureRange , getEmptyImage } from './slider-utils'
+import { configureRange } from './slider-utils'
 
 
 export default class StepRangeSlider extends React.Component {
@@ -15,23 +15,33 @@ export default class StepRangeSlider extends React.Component {
     this.stepDown = this.stepDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleChangeComplete = this.handleChangeComplete.bind(this)
+    this.handleMove = this.handleMove.bind(this)
+    this.handlePress = this.handlePress.bind(this)
+    this.handleMouseDown = this.handleMouseDown.bind(this)
+    this.handleMouseUp = this.handleMouseUp.bind(this)
+    this.handleMouseMove = this.handleMouseMove.bind(this)
     this.handleTouchStart = this.handleTouchStart.bind(this)
     this.handleTouchMove = this.handleTouchMove.bind(this)
-    this.handleTouchEnd = this.handleTouchEnd.bind(this)
-    this.handleDragStart = this.handleDragStart.bind(this)
-    this.handleDrag = this.handleDrag.bind(this)
-    this.handleDragEnd = this.handleDragEnd.bind(this)
-    this.handleSnap = this.handleSnap.bind(this)
-    this.handleMove = this.handleMove.bind(this)
   }
 
   componentWillMount() {
-    this.handleChange = _.throttle(this.handleChange, 100)
+    this.handleChange = _.throttle(this.handleChange, 200)
     this.setInitialState(this.props)
+  }
+
+  componentDidMount() {
+    window.addEventListener('touchmove', this.handleTouchMove)
+    window.addEventListener('touchend', this.handleMouseUp)
+    window.addEventListener('mousemove', this.handleMouseMove)
+    window.addEventListener('mouseup', this.handleMouseUp)
   }
 
   componentWillUnmount() {
     this.handleChange.cancel()
+    window.removeEventListener('touchmove', this.handleTouchMove)
+    window.removeEventListener('touchend', this.handleMouseUp)
+    window.removeEventListener('mousemove', this.handleMouseMove)
+    window.removeEventListener('mouseup', this.handleMouseUp)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -81,44 +91,43 @@ export default class StepRangeSlider extends React.Component {
     const { onChangeComplete } = this.props
     _.isFunction(onChangeComplete) && onChangeComplete(value)
   }
-
-  handleTouchStart(e) {
-    this.sliderRect = e.currentTarget.parentNode.getBoundingClientRect()
+  
+  handleMouseUp(e) {
+    if (this.state.pressed) {
+      this.setState({ pressed: false })
+      this.handleChangeComplete()
+    }
   }
 
-  handleTouchEnd(e) {
-    this.handleChangeComplete()
+  handleMouseMove(e) {
+    if (this.state.pressed) {
+      this.handleMove(e)
+    }
+  }
+
+  handleMouseDown(e) {
+    e.preventDefault()
+    this.handlePress()
+    this.handleMove(e)
   }
 
   handleTouchMove(e) {
-    e.preventDefault()  
-    this.handleDrag(e.touches[0])
+    e.preventDefault()
+    this.handleMouseMove(e.touches[0])
   }
 
-  handleDragStart(e) {
-    this.sliderRect = e.currentTarget.parentNode.getBoundingClientRect()
-    e.dataTransfer.setDragImage(getEmptyImage(e), 0, 0) 
+  handleTouchStart(e) {
+    this.handlePress()
+    this.handleMove(e.touches[0])
   }
 
-  handleDrag(e) {
-    this.handleMove(e.clientX, () => {
-      this.handleChange()
-    })
+  handlePress() {
+    this.sliderRect = this.slider.getBoundingClientRect()
+    this.setState({ pressed: true })
   }
 
-  handleDragEnd(e) {
-    this.handleChangeComplete()
-  }
-
-  handleSnap(e) {
-    this.sliderRect = e.currentTarget.getBoundingClientRect()
-    this.handleMove(e.clientX, () => {
-      this.handleChange()
-      this.handleChangeComplete()
-    })
-  }
-
-  handleMove(clientX, callback) {
+  handleMove(e) {
+    const { clientX } = e
     const { disabled } = this.props
     const { range } = this.state
     const { width, left, right } = this.sliderRect
@@ -137,7 +146,7 @@ export default class StepRangeSlider extends React.Component {
     const value = range.getValueForStep(currentStep) 
     
     if (value !== this.state.value || currentStep !== this.state.currentStep) {
-      this.setState({ value, currentStep }, callback)
+      this.setState({ value, currentStep }, this.handleChange)
     }   
   }
 
@@ -149,19 +158,15 @@ export default class StepRangeSlider extends React.Component {
     const offsetStyle = { left: `${offset}%` }
 
     return (
-      <div className={classnames("StepRangeSlider", className)} onMouseDown={this.handleSnap}>
+      <div className={classnames("StepRangeSlider", className)} 
+        onMouseDown={this.handleMouseDown}
+        ref={node => this.slider = node}>
         <div className="StepRangeSlider__track" />
-        <div className="StepRangeSlider__handle"
+        <div className="StepRangeSlider__handle" 
           onTouchStart={this.handleTouchStart}
-          onTouchMove={this.handleTouchMove}
-          onTouchEnd={this.handleTouchEnd}
-          onDragStart={this.handleDragStart}
-          onDragEnd={this.handleDragEnd} 
-          onDrag={this.handleDrag} 
-          style={offsetStyle}
-          draggable>
-          <div 
-            className="StepRangeSlider__thumb"
+          onMouseDown={this.handleMouseDown}
+          style={offsetStyle}>
+          <div className="StepRangeSlider__thumb"
             aria-valuemin={range.minValue}
             aria-valuemax={range.maxValue}
             aria-valuenow={value} 

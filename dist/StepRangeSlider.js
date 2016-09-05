@@ -92,27 +92,38 @@
       _this.stepDown = _this.stepDown.bind(_this);
       _this.handleChange = _this.handleChange.bind(_this);
       _this.handleChangeComplete = _this.handleChangeComplete.bind(_this);
+      _this.handleMove = _this.handleMove.bind(_this);
+      _this.handlePress = _this.handlePress.bind(_this);
+      _this.handleMouseDown = _this.handleMouseDown.bind(_this);
+      _this.handleMouseUp = _this.handleMouseUp.bind(_this);
+      _this.handleMouseMove = _this.handleMouseMove.bind(_this);
       _this.handleTouchStart = _this.handleTouchStart.bind(_this);
       _this.handleTouchMove = _this.handleTouchMove.bind(_this);
-      _this.handleTouchEnd = _this.handleTouchEnd.bind(_this);
-      _this.handleDragStart = _this.handleDragStart.bind(_this);
-      _this.handleDrag = _this.handleDrag.bind(_this);
-      _this.handleDragEnd = _this.handleDragEnd.bind(_this);
-      _this.handleSnap = _this.handleSnap.bind(_this);
-      _this.handleMove = _this.handleMove.bind(_this);
       return _this;
     }
 
     _createClass(StepRangeSlider, [{
       key: 'componentWillMount',
       value: function componentWillMount() {
-        this.handleChange = _lodash2.default.throttle(this.handleChange, 100);
+        this.handleChange = _lodash2.default.throttle(this.handleChange, 200);
         this.setInitialState(this.props);
+      }
+    }, {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        window.addEventListener('touchmove', this.handleTouchMove);
+        window.addEventListener('touchend', this.handleMouseUp);
+        window.addEventListener('mousemove', this.handleMouseMove);
+        window.addEventListener('mouseup', this.handleMouseUp);
       }
     }, {
       key: 'componentWillUnmount',
       value: function componentWillUnmount() {
         this.handleChange.cancel();
+        window.removeEventListener('touchmove', this.handleTouchMove);
+        window.removeEventListener('touchend', this.handleMouseUp);
+        window.removeEventListener('mousemove', this.handleMouseMove);
+        window.removeEventListener('mouseup', this.handleMouseUp);
       }
     }, {
       key: 'componentWillReceiveProps',
@@ -176,55 +187,49 @@
         _lodash2.default.isFunction(onChangeComplete) && onChangeComplete(value);
       }
     }, {
-      key: 'handleTouchStart',
-      value: function handleTouchStart(e) {
-        this.sliderRect = e.currentTarget.parentNode.getBoundingClientRect();
+      key: 'handleMouseUp',
+      value: function handleMouseUp(e) {
+        if (this.state.pressed) {
+          this.setState({ pressed: false });
+          this.handleChangeComplete();
+        }
       }
     }, {
-      key: 'handleTouchEnd',
-      value: function handleTouchEnd(e) {
-        this.handleChangeComplete();
+      key: 'handleMouseMove',
+      value: function handleMouseMove(e) {
+        if (this.state.pressed) {
+          this.handleMove(e);
+        }
+      }
+    }, {
+      key: 'handleMouseDown',
+      value: function handleMouseDown(e) {
+        e.preventDefault();
+        this.handlePress();
+        this.handleMove(e);
       }
     }, {
       key: 'handleTouchMove',
       value: function handleTouchMove(e) {
         e.preventDefault();
-        this.handleDrag(e.touches[0]);
+        this.handleMouseMove(e.touches[0]);
       }
     }, {
-      key: 'handleDragStart',
-      value: function handleDragStart(e) {
-        this.sliderRect = e.currentTarget.parentNode.getBoundingClientRect();
-        e.dataTransfer.setDragImage((0, _sliderUtils.getEmptyImage)(e), 0, 0);
+      key: 'handleTouchStart',
+      value: function handleTouchStart(e) {
+        this.handlePress();
+        this.handleMove(e.touches[0]);
       }
     }, {
-      key: 'handleDrag',
-      value: function handleDrag(e) {
-        var _this2 = this;
-
-        this.handleMove(e.clientX, function () {
-          _this2.handleChange();
-        });
-      }
-    }, {
-      key: 'handleDragEnd',
-      value: function handleDragEnd(e) {
-        this.handleChangeComplete();
-      }
-    }, {
-      key: 'handleSnap',
-      value: function handleSnap(e) {
-        var _this3 = this;
-
-        this.sliderRect = e.currentTarget.getBoundingClientRect();
-        this.handleMove(e.clientX, function () {
-          _this3.handleChange();
-          _this3.handleChangeComplete();
-        });
+      key: 'handlePress',
+      value: function handlePress() {
+        this.sliderRect = this.slider.getBoundingClientRect();
+        this.setState({ pressed: true });
       }
     }, {
       key: 'handleMove',
-      value: function handleMove(clientX, callback) {
+      value: function handleMove(e) {
+        var clientX = e.clientX;
         var disabled = this.props.disabled;
         var range = this.state.range;
         var _sliderRect = this.sliderRect;
@@ -247,12 +252,14 @@
         var value = range.getValueForStep(currentStep);
 
         if (value !== this.state.value || currentStep !== this.state.currentStep) {
-          this.setState({ value: value, currentStep: currentStep }, callback);
+          this.setState({ value: value, currentStep: currentStep }, this.handleChange);
         }
       }
     }, {
       key: 'render',
       value: function render() {
+        var _this2 = this;
+
         var _props = this.props;
         var id = _props.id;
         var name = _props.name;
@@ -271,21 +278,19 @@
 
         return _react2.default.createElement(
           'div',
-          { className: (0, _classnames2.default)("StepRangeSlider", className), onMouseDown: this.handleSnap },
+          { className: (0, _classnames2.default)("StepRangeSlider", className),
+            onMouseDown: this.handleMouseDown,
+            ref: function ref(node) {
+              return _this2.slider = node;
+            } },
           _react2.default.createElement('div', { className: 'StepRangeSlider__track' }),
           _react2.default.createElement(
             'div',
             { className: 'StepRangeSlider__handle',
               onTouchStart: this.handleTouchStart,
-              onTouchMove: this.handleTouchMove,
-              onTouchEnd: this.handleTouchEnd,
-              onDragStart: this.handleDragStart,
-              onDragEnd: this.handleDragEnd,
-              onDrag: this.handleDrag,
-              style: offsetStyle,
-              draggable: true },
-            _react2.default.createElement('div', {
-              className: 'StepRangeSlider__thumb',
+              onMouseDown: this.handleMouseDown,
+              style: offsetStyle },
+            _react2.default.createElement('div', { className: 'StepRangeSlider__thumb',
               'aria-valuemin': range.minValue,
               'aria-valuemax': range.maxValue,
               'aria-valuenow': value,

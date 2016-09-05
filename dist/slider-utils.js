@@ -1,6 +1,6 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports'], factory);
+    define(["exports"], factory);
   } else if (typeof exports !== "undefined") {
     factory(exports);
   } else {
@@ -11,13 +11,12 @@
     global.sliderUtils = mod.exports;
   }
 })(this, function (exports) {
-  'use strict';
+  "use strict";
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   exports.configureRange = configureRange;
-  exports.getEmptyImage = getEmptyImage;
 
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
@@ -66,7 +65,7 @@
       // final breakpoint represents max value 
       // so user isn't forced to set a step
       // even though we need it here.
-      if (_typeof(curr.step) === (typeof undefined === 'undefined' ? 'undefined' : _typeof(undefined))) {
+      if (_typeof(curr.step) === (typeof undefined === "undefined" ? "undefined" : _typeof(undefined))) {
         curr.step = 1;
       }
       result.push(curr);
@@ -121,15 +120,5 @@
       getValueForStep: getValueForStep,
       getStepForValue: getStepForValue
     };
-  }
-
-  // effectively disables html5 default drag preview
-  var emptyImage = null;
-  function getEmptyImage() {
-    if (!emptyImage) {
-      emptyImage = new Image();
-      emptyImage.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-    }
-    return emptyImage;
   }
 });
