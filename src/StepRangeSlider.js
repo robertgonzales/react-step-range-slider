@@ -112,8 +112,10 @@ export default class StepRangeSlider extends React.Component {
   }
 
   handleTouchMove(e) {
-    e.preventDefault()
-    this.handleMouseMove(e.touches[0])
+    if (this.state.pressed) {
+      e.preventDefault()
+      this.handleMouseMove(e.touches[0])
+    }
   }
 
   handleTouchStart(e) {
