@@ -1,25 +1,29 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'lodash', 'react', 'react-dom', 'classnames', './slider-utils', './StepRangeSlider.css'], factory);
+    define(['exports', 'lodash/throttle', 'lodash/isFunction', 'react', 'prop-types', 'react-dom', 'classnames', './slider-utils', './StepRangeSlider.css'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('lodash'), require('react'), require('react-dom'), require('classnames'), require('./slider-utils'), require('./StepRangeSlider.css'));
+    factory(exports, require('lodash/throttle'), require('lodash/isFunction'), require('react'), require('prop-types'), require('react-dom'), require('classnames'), require('./slider-utils'), require('./StepRangeSlider.css'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.lodash, global.react, global.reactDom, global.classnames, global.sliderUtils, global.StepRangeSlider);
+    factory(mod.exports, global.throttle, global.isFunction, global.react, global.propTypes, global.reactDom, global.classnames, global.sliderUtils, global.StepRangeSlider);
     global.StepRangeSlider = mod.exports;
   }
-})(this, function (exports, _lodash, _react, _reactDom, _classnames, _sliderUtils) {
+})(this, function (exports, _throttle, _isFunction, _react, _propTypes, _reactDom, _classnames, _sliderUtils) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
 
-  var _lodash2 = _interopRequireDefault(_lodash);
+  var _throttle2 = _interopRequireDefault(_throttle);
+
+  var _isFunction2 = _interopRequireDefault(_isFunction);
 
   var _react2 = _interopRequireDefault(_react);
+
+  var _propTypes2 = _interopRequireDefault(_propTypes);
 
   var _reactDom2 = _interopRequireDefault(_reactDom);
 
@@ -79,33 +83,112 @@
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
-  var StepRangeSlider = function (_React$Component) {
-    _inherits(StepRangeSlider, _React$Component);
+  var StepRangeSlider = function (_Component) {
+    _inherits(StepRangeSlider, _Component);
 
-    function StepRangeSlider(props) {
+    function StepRangeSlider() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
       _classCallCheck(this, StepRangeSlider);
 
-      var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StepRangeSlider).call(this, props));
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
 
-      _this.setInitialState = _this.setInitialState.bind(_this);
-      _this.stepUp = _this.stepUp.bind(_this);
-      _this.stepDown = _this.stepDown.bind(_this);
-      _this.handleChange = _this.handleChange.bind(_this);
-      _this.handleChangeComplete = _this.handleChangeComplete.bind(_this);
-      _this.handleMove = _this.handleMove.bind(_this);
-      _this.handlePress = _this.handlePress.bind(_this);
-      _this.handleMouseDown = _this.handleMouseDown.bind(_this);
-      _this.handleMouseUp = _this.handleMouseUp.bind(_this);
-      _this.handleMouseMove = _this.handleMouseMove.bind(_this);
-      _this.handleTouchStart = _this.handleTouchStart.bind(_this);
-      _this.handleTouchMove = _this.handleTouchMove.bind(_this);
-      return _this;
+      return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = StepRangeSlider.__proto__ || Object.getPrototypeOf(StepRangeSlider)).call.apply(_ref, [this].concat(args))), _this), _this.setInitialState = function (props) {
+        var range = (0, _sliderUtils.configureRange)(props.range);
+        var value = range.ensureValue(props.value || props.defaultValue);
+        var currentStep = range.getStepForValue(value);
+        _this.setState({ value: value, range: range, currentStep: currentStep });
+      }, _this.stepUp = function (amount) {
+        var _this$state = _this.state,
+            range = _this$state.range,
+            currentStep = _this$state.currentStep;
+
+        var nextStep = currentStep + amount;
+        if (nextStep <= range.maxStep) {
+          var nextValue = range.getValueForStep(nextStep);
+          _this.setState({ currentStep: nextStep, value: nextValue });
+        }
+      }, _this.stepDown = function (amount) {
+        var _this$state2 = _this.state,
+            range = _this$state2.range,
+            currentStep = _this$state2.currentStep;
+
+        var nextStep = currentStep - amount;
+        if (nextStep >= range.minStep) {
+          var nextValue = range.getValueForStep(nextStep);
+          _this.setState({ currentStep: nextStep, value: nextValue });
+        }
+      }, _this.handleChange = function () {
+        var value = _this.state.value;
+        var onChange = _this.props.onChange;
+
+        (0, _isFunction2.default)(onChange) && onChange(value);
+      }, _this.handleChangeComplete = function () {
+        var value = _this.state.value;
+        var onChangeComplete = _this.props.onChangeComplete;
+
+        (0, _isFunction2.default)(onChangeComplete) && onChangeComplete(value);
+      }, _this.handleMouseUp = function (e) {
+        if (_this.state.pressed) {
+          _this.setState({ pressed: false });
+          _this.handleChangeComplete();
+        }
+      }, _this.handleMouseMove = function (e) {
+        if (_this.state.pressed) {
+          _this.handleMove(e);
+        }
+      }, _this.handleMouseDown = function (e) {
+        e.preventDefault();
+        _this.handlePress();
+        _this.handleMove(e);
+      }, _this.handleTouchMove = function (e) {
+        if (_this.state.pressed) {
+          e.preventDefault();
+          _this.handleMouseMove(e.touches[0]);
+        }
+      }, _this.handleTouchStart = function (e) {
+        _this.handlePress();
+        _this.handleMove(e.touches[0]);
+      }, _this.handlePress = function () {
+        _this.sliderRect = _this.slider.getBoundingClientRect();
+        _this.setState({ pressed: true });
+      }, _this.handleMove = function (e) {
+        var clientX = e.clientX;
+        var disabled = _this.props.disabled;
+        var range = _this.state.range;
+        var _this$sliderRect = _this.sliderRect,
+            width = _this$sliderRect.width,
+            left = _this$sliderRect.left,
+            right = _this$sliderRect.right;
+
+
+        if (!clientX || disabled) return;
+
+        var position = void 0;
+        if (clientX < left) {
+          position = 0;
+        } else if (clientX > right) {
+          position = right - left;
+        } else {
+          position = clientX - left;
+        }
+        var currentStep = Math.round(position / width * range.maxStep);
+        var value = range.getValueForStep(currentStep);
+
+        if (value !== _this.state.value || currentStep !== _this.state.currentStep) {
+          _this.setState({ value: value, currentStep: currentStep }, _this.handleChange);
+        }
+      }, _temp), _possibleConstructorReturn(_this, _ret);
     }
 
     _createClass(StepRangeSlider, [{
       key: 'componentWillMount',
       value: function componentWillMount() {
-        this.handleChange = _lodash2.default.throttle(this.handleChange, 200);
+        this.handleChange = (0, _throttle2.default)(this.handleChange, 200);
         this.setInitialState(this.props);
       }
     }, {
@@ -137,142 +220,21 @@
         }
       }
     }, {
-      key: 'setInitialState',
-      value: function setInitialState(props) {
-        var range = (0, _sliderUtils.configureRange)(props.range);
-        var value = range.ensureValue(props.value || props.defaultValue);
-        var currentStep = range.getStepForValue(value);
-        this.setState({ value: value, range: range, currentStep: currentStep });
-      }
-    }, {
-      key: 'stepUp',
-      value: function stepUp(amount) {
-        var _state = this.state;
-        var range = _state.range;
-        var currentStep = _state.currentStep;
-
-        var nextStep = currentStep + amount;
-        if (nextStep <= range.maxStep) {
-          var nextValue = range.getValueForStep(nextStep);
-          this.setState({ currentStep: nextStep, value: nextValue });
-        }
-      }
-    }, {
-      key: 'stepDown',
-      value: function stepDown(amount) {
-        var _state2 = this.state;
-        var range = _state2.range;
-        var currentStep = _state2.currentStep;
-
-        var nextStep = currentStep - amount;
-        if (nextStep >= range.minStep) {
-          var nextValue = range.getValueForStep(nextStep);
-          this.setState({ currentStep: nextStep, value: nextValue });
-        }
-      }
-    }, {
-      key: 'handleChange',
-      value: function handleChange() {
-        var value = this.state.value;
-        var onChange = this.props.onChange;
-
-        _lodash2.default.isFunction(onChange) && onChange(value);
-      }
-    }, {
-      key: 'handleChangeComplete',
-      value: function handleChangeComplete() {
-        var value = this.state.value;
-        var onChangeComplete = this.props.onChangeComplete;
-
-        _lodash2.default.isFunction(onChangeComplete) && onChangeComplete(value);
-      }
-    }, {
-      key: 'handleMouseUp',
-      value: function handleMouseUp(e) {
-        if (this.state.pressed) {
-          this.setState({ pressed: false });
-          this.handleChangeComplete();
-        }
-      }
-    }, {
-      key: 'handleMouseMove',
-      value: function handleMouseMove(e) {
-        if (this.state.pressed) {
-          this.handleMove(e);
-        }
-      }
-    }, {
-      key: 'handleMouseDown',
-      value: function handleMouseDown(e) {
-        e.preventDefault();
-        this.handlePress();
-        this.handleMove(e);
-      }
-    }, {
-      key: 'handleTouchMove',
-      value: function handleTouchMove(e) {
-        if (this.state.pressed) {
-          e.preventDefault();
-          this.handleMouseMove(e.touches[0]);
-        }
-      }
-    }, {
-      key: 'handleTouchStart',
-      value: function handleTouchStart(e) {
-        this.handlePress();
-        this.handleMove(e.touches[0]);
-      }
-    }, {
-      key: 'handlePress',
-      value: function handlePress() {
-        this.sliderRect = this.slider.getBoundingClientRect();
-        this.setState({ pressed: true });
-      }
-    }, {
-      key: 'handleMove',
-      value: function handleMove(e) {
-        var clientX = e.clientX;
-        var disabled = this.props.disabled;
-        var range = this.state.range;
-        var _sliderRect = this.sliderRect;
-        var width = _sliderRect.width;
-        var left = _sliderRect.left;
-        var right = _sliderRect.right;
-
-
-        if (!clientX || disabled) return;
-
-        var position = void 0;
-        if (clientX < left) {
-          position = 0;
-        } else if (clientX > right) {
-          position = right - left;
-        } else {
-          position = clientX - left;
-        }
-        var currentStep = Math.round(position / width * range.maxStep);
-        var value = range.getValueForStep(currentStep);
-
-        if (value !== this.state.value || currentStep !== this.state.currentStep) {
-          this.setState({ value: value, currentStep: currentStep }, this.handleChange);
-        }
-      }
-    }, {
       key: 'render',
       value: function render() {
         var _this2 = this;
 
-        var _props = this.props;
-        var id = _props.id;
-        var name = _props.name;
-        var disabled = _props.disabled;
-        var tooltip = _props.tooltip;
-        var children = _props.children;
-        var className = _props.className;
-        var _state3 = this.state;
-        var value = _state3.value;
-        var range = _state3.range;
-        var currentStep = _state3.currentStep;
+        var _props = this.props,
+            id = _props.id,
+            name = _props.name,
+            disabled = _props.disabled,
+            tooltip = _props.tooltip,
+            children = _props.children,
+            className = _props.className;
+        var _state = this.state,
+            value = _state.value,
+            range = _state.range,
+            currentStep = _state.currentStep;
 
 
         var offset = currentStep / range.maxStep * 100;
@@ -280,7 +242,8 @@
 
         return _react2.default.createElement(
           'div',
-          { className: (0, _classnames2.default)("StepRangeSlider", className),
+          {
+            className: (0, _classnames2.default)('StepRangeSlider', className),
             onMouseDown: this.handleMouseDown,
             ref: function ref(node) {
               return _this2.slider = node;
@@ -288,17 +251,19 @@
           _react2.default.createElement('div', { className: 'StepRangeSlider__track' }),
           _react2.default.createElement(
             'div',
-            { className: 'StepRangeSlider__handle',
+            {
+              className: 'StepRangeSlider__handle',
               onTouchStart: this.handleTouchStart,
               onMouseDown: this.handleMouseDown,
               style: offsetStyle },
-            _react2.default.createElement('div', { className: 'StepRangeSlider__thumb',
+            _react2.default.createElement('div', {
+              className: 'StepRangeSlider__thumb',
               'aria-valuemin': range.minValue,
               'aria-valuemax': range.maxValue,
               'aria-valuenow': value,
               role: 'slider'
             }),
-            _lodash2.default.isFunction(children) ? children(value) : children
+            (0, _isFunction2.default)(children) ? children(value) : children
           ),
           _react2.default.createElement('input', { type: 'hidden', id: id, name: name, disabled: disabled })
         );
@@ -306,23 +271,23 @@
     }]);
 
     return StepRangeSlider;
-  }(_react2.default.Component);
+  }(_react.Component);
 
   exports.default = StepRangeSlider;
 
 
-  StepRangeSlider.displayName = "StepRangeSlider";
+  StepRangeSlider.displayName = 'StepRangeSlider';
 
   StepRangeSlider.propTypes = {
-    children: _react2.default.PropTypes.any,
-    value: _react2.default.PropTypes.number,
-    defaultValue: _react2.default.PropTypes.number,
-    disabled: _react2.default.PropTypes.bool,
-    onChange: _react2.default.PropTypes.func,
-    onChangeComplete: _react2.default.PropTypes.func,
-    range: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({
-      value: _react2.default.PropTypes.number.isRequired,
-      step: _react2.default.PropTypes.number
+    children: _propTypes2.default.any,
+    value: _propTypes2.default.number,
+    defaultValue: _propTypes2.default.number,
+    disabled: _propTypes2.default.bool,
+    onChange: _propTypes2.default.func,
+    onChangeComplete: _propTypes2.default.func,
+    range: _propTypes2.default.arrayOf(_propTypes2.default.shape({
+      value: _propTypes2.default.number.isRequired,
+      step: _propTypes2.default.number
     }).isRequired).isRequired
   };
 

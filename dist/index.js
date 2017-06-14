@@ -16,14 +16,16 @@
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-
-  var _StepRangeSlider2 = _interopRequireDefault(_StepRangeSlider);
+  Object.defineProperty(exports, 'default', {
+    enumerable: true,
+    get: function () {
+      return _interopRequireDefault(_StepRangeSlider).default;
+    }
+  });
 
   function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : {
       default: obj
     };
   }
-
-  exports.default = _StepRangeSlider2.default;
 });

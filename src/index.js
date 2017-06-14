@@ -1,3 +1,1 @@
-import StepRangeSlider from './StepRangeSlider'
-
-export default StepRangeSlider
+export { default } from './StepRangeSlider'
