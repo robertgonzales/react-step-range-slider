@@ -2,7 +2,7 @@
   "name": "react-step-range-slider",
   "description": "A range slider input for React",
   "main": "dist/index.js",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": "Robert Gonzales",
   "license": "MIT",
   "keywords": [
@@ -57,12 +57,14 @@
     "webpack": "1.13.0",
     "webpack-dev-server": "1.14.1"
   },
+  "peerDependencies": {
+    "react": "^15",
+    "react-dom": "^15"
+  },
   "dependencies": {
     "autoprefixer": "^6.3.6",
     "classnames": "^2.2.5",
     "lodash": "^4.11.1",
-    "prop-types": "^15.5.10",
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4"
+    "prop-types": "^15"
   }
 }
