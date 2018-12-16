@@ -37,7 +37,8 @@ export default class StepRangeSlider extends Component {
       nextProps.value !== this.state.value
     ) {
       const value = this.state.range.ensureValue(nextProps.value)
-      this.setState({ value })
+      const currentStep = this.state.range.getStepForValue(value)
+      this.setState({ value,currentStep })
     }
   }
 
